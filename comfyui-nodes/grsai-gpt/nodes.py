@@ -226,7 +226,4 @@ class GrsaiGptImage:
         except Exception as e:
             raise GrsaiCliError(f"grsai-gpt: 读取输出 PNG 失败：{e}") from e
 
-        elapsed = _time.monotonic() - start_time
-        status = f"OK {elapsed:.1f}s · {len(paths)} 张图"
-        _push_status(f"[grsai-gpt] {status}")
         return (torch.stack(tensors, dim=0),)
