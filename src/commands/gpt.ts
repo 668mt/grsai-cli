@@ -70,7 +70,7 @@ export async function runGpt(opts: GptImageCommandOptions): Promise<void> {
   // 打印本次执行的完整配置
   logger.heading('生成配置');
   logger.kv('prompt', opts.prompt);
-  logger.kv('model', opts.model ?? 'gpt-image-2');
+  logger.kv('model', opts.model ?? 'gpt-image-2.5');
   if (opts.ratio) logger.kv('ratio', opts.ratio);
   if (opts.quality) logger.kv('quality', opts.quality);
   if (opts.background) logger.kv('background', opts.background);

@@ -75,7 +75,7 @@ program
   .addOption(
     new Option('--size <size>', '分辨率')
       .choices(BANANA_IMAGE_SIZES)
-      .default('1K'),
+      .default('2K'),
   )
   .option('--poll-intervals <list>', '轮询间隔（秒，逗号分隔），默认 5,5,10')
   .option('--max-wait <sec>', '最长等待（秒）', '600')
@@ -107,7 +107,7 @@ program
   .addOption(
     new Option('--model <id>', '模型名称')
       .choices(GPT_IMAGE_MODELS)
-      .default('gpt-image-2'),
+      .default('gpt-image-2.5'),
   )
   .option('--ratio <ratio>', '比例（如 1:1）或像素值（如 1024x1024）', '1024x1024')
   .addOption(

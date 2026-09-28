@@ -85,7 +85,8 @@ function describeBackends() {
       displayName: 'gpt-image-2 / 2.5 (grsai)',
       kind: 'image' as const,
       models: [
-        { id: 'gpt-image-2', label: 'gpt-image-2 (默认)' },
+        { id: 'gpt-image-2', label: 'gpt-image-2' },
+        { id: 'gpt-image-2.5', label: 'gpt-image-2.5 (默认)' },
         { id: 'gpt-image-2.5', label: 'gpt-image-2.5' },
         { id: 'gpt-image-2-vip', label: 'gpt-image-2-vip' },
       ],

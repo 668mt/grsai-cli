@@ -16,7 +16,6 @@ description: |
 - 用户要生成视频（电影感、延时摄影、动态镜头）
 - 用户希望带参考图（i2i）做风格 / 人物 / 服装迁移
 - 用户希望批量并发生成同一 prompt 的多个变体
-- 用户希望 agent 改写 prompt 后再生成（中文 → 优化后的中文）
 
 ## 运行方式
 
@@ -105,7 +104,7 @@ grsai banana -p "..." --model nano-banana-pro --ratio 16:9 --size 2K \
 
 | 参数 | 类型 | 默认 | 说明 |
 |------|------|------|------|
-| `--model` | enum | `gpt-image-2` | 模型：`gpt-image-2` / `gpt-image-2-vip` / `gpt-image-2.5` / `gpt-image-2.5-flare` / `gpt-image-2.5-sunburst` |
+| `--model` | enum | `gpt-image-2.5` | 模型：`gpt-image-2` / `gpt-image-2-vip` / `gpt-image-2.5` / `gpt-image-2.5-flare` / `gpt-image-2.5-sunburst` |
 | `--ratio` | string | `1024x1024` | 比例（如 `1:1` / `16:9` / `9:16`）**或**像素值（如 `1024x1536` / `2048x2048` / `3840x2160`） |
 | `--quality` | enum | `auto` | 质量档：`auto` / `low` / `medium` / `high` / `xhigh` / `max` |
 | `--background` | enum | — | 仅支持 `transparent`；仅 `gpt-image-2-vip` / `2.5-flare` / `2.5-sunburst` 可用 |

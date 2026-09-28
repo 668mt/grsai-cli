@@ -44,3 +44,5 @@ web/dist/
 ~/
 # pnpm 临时文件
 pnpm-workspace.yaml
+*.png
+*.jpg

@@ -87,7 +87,7 @@ export class GptImageClient extends BaseImageClient {
 
   private buildPayload(req: GptImageGenerateRequest): Record<string, unknown> {
     const payload: Record<string, unknown> = {
-      model: req.model ?? 'gpt-image-2',
+      model: req.model ?? 'gpt-image-2.5',
       prompt: req.prompt,
       replyType: 'async',
     };
