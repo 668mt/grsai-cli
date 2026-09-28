@@ -1,0 +1,6 @@
+# pnpm 11+：允许 esbuild / unrs-resolver 运行 install scripts（tsup / vite 依赖）
+# 写在 pnpm-workspace.yaml 里，pnpm 才会读，npm 完全不读（不会报 Unknown project config）
+# 旧的 .npmrc allow-build / onlyBuiltDependencies 已被弃用
+allowBuilds:
+  esbuild: true
+  unrs-resolver: true

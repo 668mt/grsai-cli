@@ -1,7 +1,7 @@
 {
   "name": "grsai-cli",
   "version": "0.1.0",
-  "description": "CLI for the grsai image & video generation platform (nano-banana / gpt-image-2.5 / minimax-h3)",
+  "description": "One-line CLI for grsai image & video generation (nano-banana / gpt-image-2 / gpt-image-2.5 / minimax-h3). Auto-retry, concurrent multi-image, bundled agent skills.",
   "type": "module",
   "bin": {
     "grsai": "./dist/cli.js"
@@ -19,7 +19,7 @@
     "dev:once": "tsx src/dev-server.ts",
     "build": "tsup",
     "build:watch": "tsup --watch",
-    "postbuild": "npm link",
+    "postbuild": "npm link --force",
     "start": "node dist/cli.js",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
@@ -36,20 +36,26 @@
   "keywords": [
     "grsai",
     "grsai-cli",
-    "ai",
+    "ai-cli",
     "cli",
+    "command-line",
     "image-generation",
     "video-generation",
     "text-to-image",
+    "text-to-video",
     "nano-banana",
     "gpt-image",
+    "gpt-image-2",
+    "gpt-image-2-5",
     "minimax-h3",
-    "command-line",
-    "typescript"
+    "typescript",
+    "developer-tools",
+    "agent-skill",
+    "claude-code"
   ],
   "author": {
     "name": "Martin",
-    "email": "[email protected]",
+    "email": "765936728@qq.com",
     "url": "https://github.com/668mt"
   },
   "license": "MIT",
