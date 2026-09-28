@@ -30,9 +30,11 @@ import {
 import { runBanana } from './commands/banana.js';
 import { runConfig } from './commands/config.js';
 import { runGpt } from './commands/gpt.js';
+import { runInstall } from './commands/install.js';
 import { runMinimaxH3 } from './commands/minimax-h3.js';
 import { runWeb } from './commands/web.js';
 import { logger } from './utils/logger.js';
+import { homedir } from 'node:os';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const pkg = JSON.parse(
@@ -193,6 +195,29 @@ program
   .action(async (opts) => {
     try {
       await runWeb(opts);
+    } catch (e) {
+      logger.error((e as Error).message);
+      process.exitCode = 1;
+    }
+  });
+
+/* -------------------------------------------------------------------------- */
+/* install（把内置 skill 安装到 ~/.agents/skills/）                           */
+/* -------------------------------------------------------------------------- */
+program
+  .command('install [skills...]')
+  .description('安装内置 skill 到 ~/.agents/skills/（默认目录）')
+  .option(
+    '-t, --target <dir>',
+    '目标目录',
+    () => join(homedir(), '.agents', 'skills'),
+  )
+  .option('-f, --force', '覆盖已存在的 skill', false)
+  .option('-l, --list', '列出可用 skill，不安装', false)
+  .option('--dry-run', '只显示计划，不实际复制', false)
+  .action(async (skills: string[], opts) => {
+    try {
+      await runInstall({ skills, ...opts });
     } catch (e) {
       logger.error((e as Error).message);
       process.exitCode = 1;

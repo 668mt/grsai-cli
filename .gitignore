@@ -40,3 +40,7 @@ web/dist/
 # Editor swap files
 *.swp
 *.swo
+# 用户家目录（绝不能 commit）
+~/
+# pnpm 临时文件
+pnpm-workspace.yaml
