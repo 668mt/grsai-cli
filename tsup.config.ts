@@ -1,3 +1,4 @@
+import { cpSync } from 'node:fs';
 import { defineConfig } from 'tsup';
 
 export default defineConfig({
@@ -20,5 +21,9 @@ export default defineConfig({
     // 不在 ESM 文件里加 shebang（Node 24+ 会把首行 #! 视作非法 token）
     // 调用方式：node dist/cli.js
     options.banner = undefined;
+  },
+  // build 完成后把 skills/ 复制到 dist/skills/，让 install 命令从打包文件位置定位
+  onSuccess: async () => {
+    cpSync('skills', 'dist/skills', { recursive: true });
   },
 });

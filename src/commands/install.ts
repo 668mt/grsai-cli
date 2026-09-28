@@ -5,23 +5,37 @@
  * grsai install 命令：把内置的 skill 安装到全局目录 ~/.agents/skills/
  *
  * 用法：
- *   grsai install                # 安装所有内置 skill
+ *   grsai install                # 安装所有内置 skill（默认覆盖已存在的 skill）
  *   grsai install grsai          # 只安装指定 skill
  *   grsai install --list         # 列出可用 skill
- *   grsai install --force        # 覆盖已存在的 skill
+ *   grsai install --no-force     # 不覆盖已存在的 skill（遇到则跳过）
  *   grsai install --target <dir> # 自定义目标目录（默认 ~/.agents/skills/）
  */
 
 import { existsSync } from 'node:fs';
 import { mkdir, cp, readdir, stat } from 'node:fs/promises';
 import { homedir } from 'node:os';
-import { join, resolve } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { logger } from '../utils/logger.js';
 
 const DEFAULT_TARGET = join(homedir(), '.agents', 'skills');
 
-/** 内置 skill 目录（相对项目根） */
-const BUILTIN_SKILLS_DIR = resolve(process.cwd(), 'skills');
+/**
+ * 内置 skill 目录
+ *
+ * 从 bundled 文件位置定位（而不是 process.cwd()），这样
+ * - 不依赖用户当前工作目录（在任何目录跑 `grsai install` 都能找到）
+ * - npm link / `npm install -g` 全局安装后也能工作
+ *
+ * 编译后 install.js 在 `dist/commands/install.js`，skills 在 `dist/skills/`
+ * （由 tsup.config.ts 的 onSuccess hook 复制）
+ */
+const BUILTIN_SKILLS_DIR = resolve(
+  dirname(fileURLToPath(import.meta.url)),
+  '..',
+  'skills',
+);
 
 /** 把 `~` 或 `~/foo` 展开为 home 目录（Node path 不自动展开） */
 function expandHome(p: string): string {
@@ -37,7 +51,7 @@ export interface InstallCommandOptions {
   skills?: string[];
   /** 目标目录，默认 ~/.agents/skills/ */
   target?: string;
-  /** 覆盖已存在的目录 */
+  /** 覆盖已存在的目录（默认 true；用 --no-force 关闭） */
   force?: boolean;
   /** 只列出可用 skill 不安装 */
   list?: boolean;
@@ -106,7 +120,7 @@ export async function runInstall(opts: InstallCommandOptions): Promise<void> {
     const exists = existsSync(dest);
 
     if (exists && !opts.force) {
-      logger.warn(`  ⏭  跳过 ${s.name}（已存在；用 --force 覆盖）`);
+      logger.warn(`  ⏭  跳过 ${s.name}（已存在；去掉 --no-force 或显式加 --force 可覆盖）`);
       skipCount++;
       continue;
     }
