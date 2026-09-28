@@ -24,6 +24,7 @@ import {
 } from '../utils/download.js';
 import { dirname as dirnameOf } from 'node:path';
 import { loadConfig, resolveApiKey } from '../utils/config.js';
+import { emitOk, isJsonMode } from '../utils/json-output.js';
 import { logger } from '../utils/logger.js';
 import { execute } from '../utils/retry.js';
 import type {
@@ -74,18 +75,21 @@ export async function runBanana(opts: BananaCommandOptions): Promise<void> {
   // clientOpts 移到 tasks.map 闭包内（需要引用 spinner 和 idx）
 
   const startTime = Date.now();
+  const jsonMode = isJsonMode(opts);
 
-  // 打印本次执行的完整配置
-  logger.heading('生成配置');
-  logger.kv('prompt', opts.prompt);
-  logger.kv('model', opts.model ?? 'nano-banana-2');
-  if (opts.ratio) logger.kv('ratio', opts.ratio);
-  if (opts.size) logger.kv('size', opts.size);
-  if (count > 1) logger.kv('count', String(count));
-  if (opts.overwrite) logger.kv('overwrite', 'true');
-  logger.kv('output', outputPath);
-  if (opts.input && opts.input.length > 0) {
-    logger.kv('reference', `${opts.input.length} 张`);
+  // 打印本次执行的完整配置（json 模式下跳过人类可读打印，避免污染 stdout）
+  if (!jsonMode) {
+    logger.heading('生成配置');
+    logger.kv('prompt', opts.prompt);
+    logger.kv('model', opts.model ?? 'nano-banana-2');
+    if (opts.ratio) logger.kv('ratio', opts.ratio);
+    if (opts.size) logger.kv('size', opts.size);
+    if (count > 1) logger.kv('count', String(count));
+    if (opts.overwrite) logger.kv('overwrite', 'true');
+    logger.kv('output', outputPath);
+    if (opts.input && opts.input.length > 0) {
+      logger.kv('reference', `${opts.input.length} 张`);
+    }
   }
 
   // 为每张图生成最终落盘路径（对齐 formatOutput）
@@ -106,7 +110,8 @@ export async function runBanana(opts: BananaCommandOptions): Promise<void> {
   const tasks = targets.map((target, idx) => async () => {
     const taskStart = Date.now();
     const tag = `[banana ${idx + 1}/${count}]`;
-    const spinner = ora({
+    // json 模式下不显示 spinner（避免 stderr/stdout 混乱）
+    const spinner = jsonMode ? null : ora({
       text: `${tag} 提交任务...`,
       color: 'cyan',
     }).start();
@@ -122,7 +127,7 @@ export async function runBanana(opts: BananaCommandOptions): Promise<void> {
       // label 带上任务编号，多并发时 stderr 日志能区分是哪张图
       label: `banana ${idx + 1}/${count}`,
       onTick: ({ elapsedSeconds: e, progress }: { elapsedSeconds: number; progress: number }) => {
-        spinner.text = `${tag} 轮询中 · 已等待 ${formatElapsed(e)} · 进度 ${progress}%`;
+        if (spinner) spinner.text = `${tag} 轮询中 · 已等待 ${formatElapsed(e)} · 进度 ${progress}%`;
       },
     };
 
@@ -155,19 +160,29 @@ export async function runBanana(opts: BananaCommandOptions): Promise<void> {
       }, { maxRetries: parseRetry(opts.retry), intervalMs: RETRY_INTERVAL_MS });
 
       const duration = Date.now() - taskStart;
-      spinner.stop();
+      if (spinner) spinner.stop();
       logger.done(`[banana ${idx + 1}/${count}] ${result}`, duration);
-      return result;
+      return { path: result, durationMs: duration };
     } catch (e) {
       const duration = Date.now() - taskStart;
-      spinner.fail(`[banana ${idx + 1}/${count}] 失败：${(e as Error).message} (${logger.fmtDuration(duration)})`);
+      if (spinner) spinner.fail(`[banana ${idx + 1}/${count}] 失败：${(e as Error).message} (${logger.fmtDuration(duration)})`);
       throw e;
     }
   });
 
   const results = await runWithConcurrency(tasks);
   const totalDuration = Date.now() - startTime;
-  logger.success(`全部完成 ${results.length}/${count} 张 · 总耗时 ${logger.fmtDuration(totalDuration)}`);
+
+  if (jsonMode) {
+    emitOk({
+      command: 'banana',
+      results,
+      totalDurationMs: totalDuration,
+      count: results.length,
+    });
+  } else {
+    logger.success(`全部完成 ${results.length}/${count} 张 · 总耗时 ${logger.fmtDuration(totalDuration)}`);
+  }
 }
 
 /**
@@ -175,9 +190,9 @@ export async function runBanana(opts: BananaCommandOptions): Promise<void> {
  * （对齐 Java Future.get 收集异常的方式）
  */
 async function runWithConcurrency(
-  tasks: Array<() => Promise<string>>,
-): Promise<string[]> {
-  const out: string[] = [];
+  tasks: Array<() => Promise<{ path: string; durationMs: number }>>,
+): Promise<Array<{ path: string; durationMs: number }>> {
+  const out: Array<{ path: string; durationMs: number }> = [];
   const errors: Error[] = [];
   await Promise.all(
     tasks.map(async (task) => {

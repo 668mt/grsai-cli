@@ -33,7 +33,7 @@ import { runGpt } from './commands/gpt.js';
 import { runInstall } from './commands/install.js';
 import { runMinimaxH3 } from './commands/minimax-h3.js';
 import { runWeb } from './commands/web.js';
-import { logger } from './utils/logger.js';
+import { logger, setJsonMode } from './utils/logger.js';
 import { homedir } from 'node:os';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -82,10 +82,18 @@ program
   .option('-k, --api-key <key>', '临时 API Key')
   .option('--proxy <url>', 'HTTP 代理')
   .option('--retry <n>', '重试次数（默认 2）', '2')
+  .option('--json', '输出 JSON 到 stdout（机器可读），进度日志走 stderr')
   .action(async (opts) => {
     try {
       await runBanana(opts);
     } catch (e) {
+      if (opts.json) {
+        const { emitError } = await import('./utils/json-output.js');
+        emitError({
+          command: 'banana',
+          error: (e as Error).message,
+        });
+      }
       logger.error((e as Error).message);
       process.exitCode = 1;
     }
@@ -124,10 +132,18 @@ program
   .option('-k, --api-key <key>', '临时 API Key')
   .option('--proxy <url>', 'HTTP 代理')
   .option('--retry <n>', '重试次数（默认 2）', '2')
+  .option('--json', '输出 JSON 到 stdout（机器可读），进度日志走 stderr')
   .action(async (opts) => {
     try {
       await runGpt(opts);
     } catch (e) {
+      if (opts.json) {
+        const { emitError } = await import('./utils/json-output.js');
+        emitError({
+          command: 'gpt',
+          error: (e as Error).message,
+        });
+      }
       logger.error((e as Error).message);
       process.exitCode = 1;
     }
@@ -171,6 +187,7 @@ program
   .option('-k, --api-key <key>', '临时 API Key')
   .option('--proxy <url>', 'HTTP 代理')
   .option('--retry <n>', '重试次数（默认 2）', '2')
+  .option('--json', '输出 JSON 到 stdout（机器可读），进度日志走 stderr')
   .action(async (opts) => {
     try {
       await runMinimaxH3({
@@ -178,6 +195,13 @@ program
         duration: String(opts.duration),
       });
     } catch (e) {
+      if (opts.json) {
+        const { emitError } = await import('./utils/json-output.js');
+        emitError({
+          command: 'minimax-h3',
+          error: (e as Error).message,
+        });
+      }
       logger.error((e as Error).message);
       process.exitCode = 1;
     }
@@ -303,6 +327,14 @@ configCmd
 /* -------------------------------------------------------------------------- */
 /* 解析 + 入口                                                                */
 /* -------------------------------------------------------------------------- */
+// 命令解析后，根据 opts.json 切换 logger 模式（让 stdout 干净）
+program.hook('preAction', (_thisCommand, actionCommand) => {
+  const opts = actionCommand.opts<{ json?: boolean }>();
+  if (opts && opts.json) {
+    setJsonMode(true);
+  }
+});
+
 program.parseAsync(process.argv).catch((e) => {
   logger.error((e as Error).message ?? String(e));
   process.exitCode = 1;
