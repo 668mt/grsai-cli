@@ -1,7 +1,7 @@
 {
-  "name": "grsai",
+  "name": "grsai-cli",
   "version": "0.1.0",
-  "description": "Grsai AI 图像/视频生成命令行工具 (TypeScript)",
+  "description": "CLI for the grsai image & video generation platform (nano-banana / gpt-image-2.5 / minimax-h3)",
   "type": "module",
   "bin": {
     "grsai": "./dist/cli.js"
@@ -11,7 +11,8 @@
   "files": [
     "dist",
     "README.md",
-    "AGENTS.md"
+    "AGENTS.md",
+    "LICENSE"
   ],
   "scripts": {
     "dev": "tsx watch src/dev-server.ts",
@@ -34,20 +35,38 @@
   },
   "keywords": [
     "grsai",
+    "grsai-cli",
     "ai",
+    "cli",
     "image-generation",
     "video-generation",
-    "cli",
+    "text-to-image",
     "nano-banana",
     "gpt-image",
     "minimax-h3",
-    "image-editing"
+    "command-line",
+    "typescript"
   ],
-  "author": "Martin",
+  "author": {
+    "name": "Martin",
+    "email": "[email protected]",
+    "url": "https://github.com/668mt"
+  },
   "license": "MIT",
   "engines": {
-    "node": ">=18.0.0",
-    "pnpm": ">=8.0.0"
+    "node": ">=18.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/668mt/grsai-cli.git"
+  },
+  "bugs": {
+    "url": "https://github.com/668mt/grsai-cli/issues"
+  },
+  "homepage": "https://github.com/668mt/grsai-cli#readme",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
   },
   "dependencies": {
     "@hono/node-server": "^1.13.7",
