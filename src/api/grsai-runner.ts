@@ -19,7 +19,7 @@ import type { BananaTaskResult } from '../types/index.js';
 import { createHttpClient } from '../utils/http.js';
 import { logger } from '../utils/logger.js';
 
-const DEFAULT_BASE_URL = 'https://grsaiapi.com';
+const DEFAULT_BASE_URL = 'https://grsai.dakka.com.cn';
 
 /** 默认轮询间隔（秒），与 Java GrsaiApi.pollIntervals 一致 */
 const DEFAULT_POLL_INTERVALS_SECONDS: number[] = [5, 5, 10];
@@ -32,7 +32,7 @@ const HEARTBEAT_INTERVAL_SECONDS = 30;
 
 export interface GrsaiTaskRunnerOptions {
   apiKey: string;
-  /** grsai 基础节点，默认 https://grsaiapi.com */
+  /** grsai 基础节点，默认 https://grsai.dakka.com.cn */
   baseUrl?: string;
   proxy?: string;
   /** 单次 HTTP 超时（毫秒） */

@@ -175,7 +175,7 @@ export interface BananaGenerateRequest {
 /** BananaClient 选项 */
 export interface BananaClientOptions {
   apiKey: string;
-  /** grsai 基础节点，默认 https://grsaiapi.com（也可设置 GRSAI_BASE_URL 环境变量） */
+  /** grsai 基础节点，默认 https://grsai.dakka.com.cn（也可设置 GRSAI_BASE_URL 环境变量） */
   baseUrl?: string;
   proxy?: string;
   timeoutMs?: number;
