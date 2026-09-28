@@ -7,12 +7,25 @@
  * 与 Java 版行为对齐：
  *   - overwrite=false（默认）时目标文件已存在则抛错
  *   - 原子写入：先写临时文件，再 rename
+ *     * POSIX: rename 原子覆盖
+ *     * Windows: rename 不覆盖，改为 copyFile + unlink（先清空再写）
+ *   - 远程 URL 用流式 pipeline（避免大文件一次读内存）
  *   - formatOutput 命名规则对齐 DownloadUtils.formatOutput
  *   - readLocalImageAsDataUrl 对齐 GrsaiUtils.parseReferenceToUrls 的本地路径分支
  */
 
+import { createWriteStream } from 'node:fs';
 import { existsSync } from 'node:fs';
-import { mkdir, readFile, rename, writeFile } from 'node:fs/promises';
+import {
+  copyFile,
+  mkdir,
+  readFile,
+  rename,
+  unlink,
+  writeFile,
+} from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { pipeline } from 'node:stream/promises';
 import { extname, join, resolve } from 'node:path';
 import { randomUUID } from 'node:crypto';
 import { createHttpClient } from './http.js';
@@ -170,17 +183,23 @@ export async function downloadImage(
   const parentDir = dirnameOf(target);
   await mkdir(parentDir, { recursive: true });
 
-  let buffer: Buffer;
   if (source.startsWith('data:')) {
-    buffer = decodeDataUrl(source);
-  } else {
-    const http = createHttpClient({ proxy, timeoutMs });
-    const response = await http.raw(source, { responseType: 'arrayBuffer' });
-    buffer = Buffer.from(response._data as ArrayBuffer);
+    // base64 data URL（小，Buffer 直存）
+    const buffer = decodeDataUrl(source);
+    await atomicWrite(target, buffer);
+    return target;
   }
 
-  await atomicWrite(target, buffer, overwrite);
-  logger.debug(`已保存 ${source.slice(0, 60)}... → ${target} (${buffer.length} bytes)`);
+  // 远程 URL：流式 pipeline，避开一次性读内存
+  const http = createHttpClient({ proxy, timeoutMs });
+  const response = await http.raw(source, { responseType: 'stream' });
+  if (!response.ok) {
+    throw new Error(`HTTP ${response.status} ${response.statusText}`);
+  }
+  // ofetch 返回 Web ReadableStream；Node pipeline 接受 NodeJS.ReadableStream
+  const stream = response._data as unknown as NodeJS.ReadableStream;
+  await atomicWrite(target, stream);
+  logger.debug(`已下载 ${source.slice(0, 60)}... → ${target}`);
   return target;
 }
 
@@ -191,23 +210,45 @@ function decodeDataUrl(dataUrl: string): Buffer {
 }
 
 /**
- * 原子写入：先写临时文件，再 rename
- * （对应 Java GrsaiUtils.download 的 tempFile + Files.move）
+ * 原子写入：先写临时文件，再移到目标
+ *
+ * 来源支持 Buffer（小）或 ReadableStream（流式，省内存）
+ *
+ * OS 差异：
+ *   - POSIX: rename 原子覆盖
+ *   - Windows: rename 不能覆盖已存在文件 → 用 copyFile + unlink 替代
  */
-async function atomicWrite(target: string, buffer: Buffer, overwrite: boolean): Promise<void> {
-  if (!overwrite && existsSync(target)) {
-    throw new Error(`目标文件已存在：${target}`);
-  }
-  const tmp = `${target}.tmp.${randomUUID()}`;
+async function atomicWrite(
+  target: string,
+  source: Buffer | NodeJS.ReadableStream,
+): Promise<void> {
+  // 临时文件放系统 tmpdir（避免输出目录权限问题）
+  const tmp = join(tmpdir(), `grsai-${randomUUID()}${extname(target)}`);
+
   try {
-    await writeFile(tmp, buffer);
-    await rename(tmp, target);
+    // 1. 写入临时文件（流式或 Buffer）
+    if (Buffer.isBuffer(source)) {
+      await writeFile(tmp, source);
+    } else {
+      await pipeline(source, createWriteStream(tmp));
+    }
+
+    // 2. 移到目标
+    if (process.platform === 'win32') {
+      // Windows: copyFile 允许覆盖 + unlink 清理临时
+      await copyFile(tmp, target);
+      await unlink(tmp);
+    } else {
+      // POSIX: rename 原子覆盖
+      await rename(tmp, target);
+    }
   } catch (e) {
     // 清理临时文件
     try {
-      const { unlink } = await import('node:fs/promises');
       await unlink(tmp);
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
     throw e;
   }
 }
