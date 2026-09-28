@@ -140,7 +140,7 @@ export class GrsaiTaskRunner {
   async pollUntilDone(taskId: string, queryPath?: string): Promise<BananaTaskResult> {
     const startTime = Date.now();
     let pollIndex = 0;
-    let lastProgress = -1;
+    let lastProgress = 0;
     let lastHeartbeatSeconds = 0;
 
     while (true) {
