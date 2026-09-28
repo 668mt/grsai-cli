@@ -22,7 +22,7 @@ description: |
 
 ```bash
 # 首次使用：配置 grsai API Key
-grsai config set --api-key sk-fb0dbd7b0d8043e085be3155623c1b81
+grsai config set --api-key sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
 # 想用 agent 改写提示词（可选）
 grsai config set --llm-api-key sk-xxx
@@ -85,7 +85,7 @@ grsai web   # 浏览器访问 http://localhost:5173
 
 - **重试**：默认 2 次（总共尝试 3 次），所有错误都会重试（含内容审核违规）
 - **超时**：单次 HTTP 10 分钟；轮询总超时 10 分钟（max-wait 可改）
-- **轮询退避**：`[5, 5, 10]` 秒，每分钟一次心跳日志（超过 60s 才显示）
+- **轮询退避**：`[5, 5, 10]` 秒（轮询间隔随时间拉长）
 - **覆盖保护**：默认拒绝覆盖已存在文件，需加 `--overwrite`
 - **输出目录**：`outputDir` 未设置时输出到当前路径
 - **历史**：CLI 不持久化历史（web 子命令会存 `~/.grsai/web-history.json`）
@@ -103,15 +103,4 @@ grsai web   # 浏览器访问 http://localhost:5173
 2. **agent 改写 prompt**：配置 LLM_API_KEY 后，agent 会根据后端 / 模型 / 比例 / 尺寸等参数生成 3 个候选变体供选择
 3. **参考图传 dataUrl**：上传参考图后前端传 dataUrl 数组给 grsai（grsai 在云端，访问不到 localhost）
 4. **重试是默认行为**：内容违规也会重试（grsai 偶发波动），不需要 `--retry`
-5. **长任务看心跳**：超过 60s 的任务会自动打印 `[后端] 轮询中 · 已等待 X · 进度 Y%`
-6. **删除本地图片很危险**：`~/.grsai/` 下存的是 API Key / 输出文件，rm 前请确认
-
-## 故障排查
-
-| 现象 | 排查 |
-|------|------|
-| `Grsai 任务违规` | 内容策略触发（裸体 / 暴力 / 真人脸）。改写 prompt（让 agent 用委婉表述）或换 backend |
-| `EADDRINUSE :::5173/5174` | 端口被占。`netstat -ltn` 查 PID，杀掉；或 `pnpm web:dev --port XXXX` |
-| 中文文件名 EPERM | 输出目录里有同名目录残留。删掉 `~/.grsai/output/同名/` 即可 |
-| 心跳看不到 | 任务 < 60s 不会触发；spinner 模式下 spinner.text 会更新而不是 stderr 行 |
-| API Key 错误 | `grsai config list` 检查 `apiKey` 是否配置；运行 `grsai config set --api-key <KEY>` |
+5. **删除本地图片很危险**：`~/.grsai/` 下存的是 API Key / 输出文件，rm 前请确认
