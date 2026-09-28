@@ -1,8 +1,8 @@
 ---
-name: grsai
+name: grsai-cli
 description: |
   grsai 平台的命令行工具（grsai CLI）。用于从终端生成图片和视频，支持 nano-banana / gpt-image-2/2.5 / minimax-h3 三类模型，
-  自动轮询、自动重试、自动并发、自动下载到本地。当用户提到「grsai」「画图」「画一张」「生成视频」
+  自动轮询、自动重试、自动并发、自动下载到本地。当用户提到「grsai」「grsai-cli」「画图」「画一张」「生成视频」
   「banana」「gpt-image」「minimax-h3」「nano-banana」时使用本 skill。
 ---
 
