@@ -1,0 +1,131 @@
+{
+  "id": "wf-grsai-prompt-from-llm-001",
+  "revision": 0,
+  "last_node_id": 5,
+  "last_link_id": 3,
+  "nodes": [
+    {
+      "id": 1,
+      "type": "PrimitiveString",
+      "pos": [-150, 100],
+      "size": [350, 200],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [
+        {"localized_name": "value", "name": "value", "type": "STRING", "widget": {"name": "value"}, "link": null}
+      ],
+      "outputs": [
+        {"localized_name": "STRING", "name": "STRING", "type": "STRING", "links": [1]}
+      ],
+      "properties": {"Node name for S&R": "PrimitiveString"},
+      "widgets_values": [
+        "赛博朋克风格的城市夜景"
+      ]
+    },
+    {
+      "id": 2,
+      "type": "PrimitiveString",
+      "pos": [-150, 350],
+      "size": [350, 200],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [
+        {"localized_name": "value", "name": "value", "type": "STRING", "widget": {"name": "value"}, "link": null}
+      ],
+      "outputs": [
+        {"localized_name": "STRING", "name": "STRING", "type": "STRING", "links": [2]}
+      ],
+      "properties": {"Node name for S&R": "PrimitiveString"},
+      "widgets_values": [
+        "霓虹灯、雨夜、飞行汽车，电影质感，8K 细节"
+      ]
+    },
+    {
+      "id": 3,
+      "type": "TextConcatenate",
+      "pos": [300, 200],
+      "size": [300, 150],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [
+        {"localized_name": "text1", "name": "text1", "type": "STRING", "widget": {"name": "text1"}, "link": null},
+        {"localized_name": "text2", "name": "text2", "type": "STRING", "widget": {"name": "text2"}, "link": null},
+        {"localized_name": "delimiter", "name": "delimiter", "type": "STRING", "widget": {"name": "delimiter"}, "link": null}
+      ],
+      "outputs": [
+        {"localized_name": "STRING", "name": "STRING", "type": "STRING", "links": [3]}
+      ],
+      "properties": {"Node name for S&R": "TextConcatenate"},
+      "widgets_values": [
+        "一只在雨中散步的小猫，",
+        "皮克斯动画风格，毛发细节分明",
+        ", "
+      ]
+    },
+    {
+      "id": 4,
+      "type": "GrsaiBanana",
+      "pos": [700, 200],
+      "size": [400, 250],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [
+        {"localized_name": "prompt", "name": "prompt", "type": "STRING", "widget": {"name": "prompt"}, "link": null},
+        {"localized_name": "ratio", "name": "ratio", "type": "COMBO", "widget": {"name": "ratio"}, "link": null},
+        {"localized_name": "size", "name": "size", "type": "COMBO", "widget": {"name": "size"}, "link": null},
+        {"localized_name": "model", "name": "model", "type": "COMBO", "widget": {"name": "model"}, "link": null},
+        {"localized_name": "count", "name": "count", "type": "INT", "widget": {"name": "count"}, "link": null},
+        {"localized_name": "max_wait", "name": "max_wait", "type": "INT", "widget": {"name": "max_wait"}, "link": null},
+        {"localized_name": "prompt_text", "name": "prompt_text", "shape": 7, "type": "STRING", "link": 3},
+        {"localized_name": "image1", "name": "image1", "shape": 7, "type": "IMAGE", "link": null},
+        {"localized_name": "image2", "name": "image2", "shape": 7, "type": "IMAGE", "link": null},
+        {"localized_name": "image3", "name": "image3", "shape": 7, "type": "IMAGE", "link": null},
+        {"localized_name": "image4", "name": "image4", "shape": 7, "type": "IMAGE", "link": null},
+        {"localized_name": "image5", "name": "image5", "shape": 7, "type": "IMAGE", "link": null}
+      ],
+      "outputs": [
+        {"localized_name": "images", "name": "images", "type": "IMAGE", "links": [4]}
+      ],
+      "properties": {"Node name for S&R": "GrsaiBanana"},
+      "widgets_values": [
+        "",
+        "16:9",
+        "2K",
+        "nano-banana-2",
+        1,
+        600
+      ]
+    },
+    {
+      "id": 5,
+      "type": "SaveImage",
+      "pos": [1200, 200],
+      "size": [400, 300],
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [
+        {"localized_name": "图像", "name": "images", "type": "IMAGE", "link": 4}
+      ],
+      "outputs": [],
+      "properties": {"Node name for S&R": "SaveImage"},
+      "widgets_values": [
+        "llm_prompt_"
+      ]
+    }
+  ],
+  "links": [
+    [1, 1, 0, 3, 0, "STRING"],
+    [2, 2, 0, 3, 1, "STRING"],
+    [3, 3, 0, 4, 6, "STRING"],
+    [4, 4, 0, 5, 0, "IMAGE"]
+  ],
+  "groups": [],
+  "config": {},
+  "extra": {"ds": {"scale": 1, "offset": [0, 0]}},
+  "version": 0.4
+}

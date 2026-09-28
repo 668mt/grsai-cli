@@ -45,3 +45,9 @@ web/dist/
 # 测试生成的图片（避免污染仓库）
 *.png
 *.jpg
+
+# Python 字节码缓存（不应入库）
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
