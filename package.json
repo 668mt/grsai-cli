@@ -18,6 +18,7 @@
     "dev:once": "tsx src/dev-server.ts",
     "build": "tsup",
     "build:watch": "tsup --watch",
+    "postbuild": "npm link",
     "start": "node dist/cli.js",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
