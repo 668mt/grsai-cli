@@ -1,0 +1,73 @@
+{
+  "name": "grsai",
+  "version": "0.1.0",
+  "description": "Grsai AI 图像/视频生成命令行工具 (TypeScript)",
+  "type": "module",
+  "bin": {
+    "grsai": "./dist/cli.js"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md",
+    "AGENTS.md"
+  ],
+  "scripts": {
+    "dev": "tsx watch src/dev-server.ts",
+    "dev:once": "tsx src/dev-server.ts",
+    "build": "tsup",
+    "build:watch": "tsup --watch",
+    "start": "node dist/cli.js",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write \"src/**/*.ts\" \"tests/**/*.ts\"",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "web:dev": "cd web && vite",
+    "web:build": "cd web && vite build",
+    "web:prod": "node dist/cli.js web",
+    "prepublishOnly": "pnpm build"
+  },
+  "keywords": [
+    "grsai",
+    "ai",
+    "image-generation",
+    "video-generation",
+    "cli",
+    "nano-banana",
+    "gpt-image",
+    "minimax-h3",
+    "image-editing"
+  ],
+  "author": "Martin",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.13.7",
+    "@langchain/anthropic": "^0.3.16",
+    "commander": "^12.1.0",
+    "hono": "^4.6.14",
+    "https-proxy-agent": "^7.0.5",
+    "langchain": "^0.3.13",
+    "@langchain/openai": "^0.3.16",
+    "ofetch": "^1.4.1",
+    "ora": "^8.1.1",
+    "picocolors": "^1.1.1"
+  },
+  "devDependencies": {
+    "@antfu/eslint-config": "^2.21.1",
+    "@types/node": "^22.7.5",
+    "eslint": "^9.12.0",
+    "prettier": "^3.3.3",
+    "tsup": "^8.3.5",
+    "tsx": "^4.19.1",
+    "typescript": "^5.6.2",
+    "vitest": "^2.1.2"
+  }
+}

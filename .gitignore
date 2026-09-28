@@ -1,0 +1,42 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build output
+dist/
+*.tsbuildinfo
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Editor / OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Environment & Secrets
+.env
+.env.local
+.env.*.local
+*.pem
+
+# Test coverage
+coverage/
+
+# CLI generated artifacts
+output/
+*.output.png
+test-out/
+
+# Web build artifacts (already in web/.gitignore)
+web/dist/
+
+# Editor swap files
+*.swp
+*.swo
