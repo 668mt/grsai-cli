@@ -108,7 +108,7 @@ grsai banana -p "..." --model nano-banana-pro --ratio 16:9 --size 2K \
 | `--ratio` | string | `1024x1024` | 比例（如 `1:1` / `16:9` / `9:16`）**或**像素值（如 `1024x1536` / `2048x2048` / `3840x2160`） |
 | `--quality` | enum | `auto` | 质量档：`auto` / `low` / `medium` / `high` / `xhigh` / `max` |
 | `--background` | enum | — | 仅支持 `transparent`；仅 `gpt-image-2-vip` / `2.5-flare` / `2.5-sunburst` 可用 |
-| `--mask` | url | — | 蒙版图片 URL |
+| `--mask` | url / path | — | 蒙版图片 URL **或本地路径**（本地自动转 base64） |
 
 **模型能力矩阵**：
 

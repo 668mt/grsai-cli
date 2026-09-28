@@ -27,8 +27,8 @@ const DEFAULT_POLL_INTERVALS_SECONDS: number[] = [5, 5, 10];
 /** 默认最大等待时间：600 秒（10 分钟） */
 const DEFAULT_MAX_WAIT_SECONDS = 600;
 
-/** 心跳日志间隔（秒）：每 60s 打印一次当前进度 */
-const HEARTBEAT_INTERVAL_SECONDS = 60;
+/** 心跳日志间隔（秒）：每 30s 打印一次当前进度 */
+const HEARTBEAT_INTERVAL_SECONDS = 30;
 
 export interface GrsaiTaskRunnerOptions {
   apiKey: string;
@@ -177,7 +177,10 @@ export class GrsaiTaskRunner {
         }
 
         if (progress !== lastProgress) {
-          logger.debug(`进度：${progress}%`);
+          // 进度变化时打 stderr（不被 ora spinner 覆盖）
+          logger.tick(
+            `[${this.label}] 进度更新 ${lastProgress}% → ${progress}%`,
+          );
           lastProgress = progress;
         }
       } else if (result.status === 'succeeded') {

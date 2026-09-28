@@ -14,6 +14,7 @@ import {
   downloadImage as downloadSingle,
   formatOutput,
   normalizeReferences,
+  readLocalImageAsDataUrl,
 } from '../utils/download.js';
 import { dirname as dirnameOf } from 'node:path';
 import { loadConfig, resolveApiKey } from '../utils/config.js';
@@ -124,7 +125,7 @@ export async function runGpt(opts: GptImageCommandOptions): Promise<void> {
           aspectRatio: opts.ratio,
           quality: opts.quality as GptImageQuality | undefined,
           background: opts.background as GptImageBackground | undefined,
-          mask: opts.mask,
+          mask: opts.mask ? await resolveMask(opts.mask) : undefined,
           replyType: 'async',
         });
         const urls = (task.results ?? []).map(r => r.url);
@@ -152,6 +153,14 @@ export async function runGpt(opts: GptImageCommandOptions): Promise<void> {
   const results = await runWithConcurrency(tasks);
   const totalDuration = Date.now() - startTime;
   logger.success(`全部完成 ${results.length}/${count} 张 · 总耗时 ${logger.fmtDuration(totalDuration)}`);
+}
+
+/** mask 支持 URL / data:base64 / 本地路径（本地自动转 base64） */
+async function resolveMask(mask: string): Promise<string> {
+  if (mask.startsWith('http://') || mask.startsWith('https://') || mask.startsWith('data:')) {
+    return mask;
+  }
+  return readLocalImageAsDataUrl(mask);
 }
 
 async function runWithConcurrency(
