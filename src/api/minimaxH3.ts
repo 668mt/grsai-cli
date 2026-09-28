@@ -53,7 +53,7 @@ export class MinimaxH3Client extends BaseImageClient {
       timeoutMs: options.timeoutMs,
       pollIntervalsSeconds: options.pollIntervalsSeconds,
       maxWaitSeconds: options.maxWaitSeconds,
-      label: 'minimax-h3',
+      label: options.label ?? 'minimax-h3',
     });
   }
 

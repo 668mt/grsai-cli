@@ -110,6 +110,8 @@ export async function runGpt(opts: GptImageCommandOptions): Promise<void> {
       timeoutMs: config.timeoutMs,
       pollIntervalsSeconds,
       maxWaitSeconds,
+      // label 带上任务编号，多并发时 stderr 日志能区分是哪张图
+      label: `gpt ${idx + 1}/${count}`,
       onTick: ({ elapsedSeconds: e, progress }: { elapsedSeconds: number; progress: number }) => {
         spinner.text = `[gpt ${idx + 1}/${count}] 轮询中 · 已等待 ${formatElapsed(e)} · 进度 ${progress}%`;
       },

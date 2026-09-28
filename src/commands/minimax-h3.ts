@@ -116,6 +116,11 @@ export async function runMinimaxH3(opts: MinimaxH3CommandOptions): Promise<void>
       timeoutMs: config.timeoutMs,
       pollIntervalsSeconds,
       maxWaitSeconds,
+      // label 带上任务编号，多并发时 stderr 日志能区分是哪张图
+      label: `minimax-h3 ${idx + 1}/${count}`,
+      onTick: ({ elapsedSeconds: e, progress }: { elapsedSeconds: number; progress: number }) => {
+        spinner.text = `[minimax-h3 ${idx + 1}/${count}] 轮询中 · 已等待 ${formatElapsed(e)} · 进度 ${progress}%`;
+      },
     };
 
     try {
@@ -187,4 +192,12 @@ function parseCount(raw?: string): number {
 function parsePollIntervals(raw?: string): number[] | undefined {
   if (!raw) return undefined;
   return raw.split(',').map(s => Number.parseInt(s.trim(), 10)).filter(n => Number.isFinite(n) && n > 0);
+}
+
+function formatElapsed(seconds: number): string {
+  const total = Math.floor(seconds);
+  if (total < 60) return `${total}s`;
+  const m = Math.floor(total / 60);
+  const s = total - m * 60;
+  return s === 0 ? `${m}m` : `${m}m${s}s`;
 }

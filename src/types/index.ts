@@ -183,6 +183,8 @@ export interface BananaClientOptions {
   pollIntervalsSeconds?: number[];
   /** 总超时（秒），默认 600（10 分钟） */
   maxWaitSeconds?: number;
+  /** 心跳 / 进度日志前缀（含任务编号用于多并发区分），默认 'banana' */
+  label?: string;
   /** 心跳回调（每 60s 触发一次），用于更新 spinner 等 UI */
   onTick?: (info: { elapsedSeconds: number; progress: number; status: string }) => void;
 }
@@ -266,6 +268,8 @@ export interface GptImageClientOptions {
   timeoutMs?: number;
   pollIntervalsSeconds?: number[];
   maxWaitSeconds?: number;
+  /** 心跳 / 进度日志前缀（含任务编号用于多并发区分），默认 'gpt' */
+  label?: string;
   /** 心跳回调（每 60s 触发一次），用于更新 spinner 等 UI */
   onTick?: (info: { elapsedSeconds: number; progress: number; status: string }) => void;
 }
@@ -323,6 +327,8 @@ export interface MinimaxH3ClientOptions {
   timeoutMs?: number;
   pollIntervalsSeconds?: number[];
   maxWaitSeconds?: number;
+  /** 心跳 / 进度日志前缀（含任务编号用于多并发区分），默认 'minimax-h3' */
+  label?: string;
   /** 心跳回调（每 60s 触发一次），用于更新 spinner 等 UI */
   onTick?: (info: { elapsedSeconds: number; progress: number; status: string }) => void;
 }

@@ -51,7 +51,7 @@ export class GptImageClient extends BaseImageClient {
       timeoutMs: options.timeoutMs,
       pollIntervalsSeconds: options.pollIntervalsSeconds,
       maxWaitSeconds: options.maxWaitSeconds,
-      label: 'gpt',
+      label: options.label ?? 'gpt',
     });
   }
 

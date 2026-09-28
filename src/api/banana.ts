@@ -50,7 +50,7 @@ export class BananaClient extends BaseImageClient {
       timeoutMs: options.timeoutMs,
       pollIntervalsSeconds: options.pollIntervalsSeconds,
       maxWaitSeconds: options.maxWaitSeconds,
-      label: 'banana',
+      label: options.label ?? 'banana',
     });
   }
 
