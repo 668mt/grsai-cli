@@ -195,7 +195,57 @@ import { logger } from '../utils/logger.js';
 | `ora` | 加载动画 |
 | `picocolors` | 终端颜色（轻量） |
 
-## 与 Java 版 ai-stdio 的能力对齐
+## 🚨 测试纪律（高优先级，每次开发前必读）
+
+### 🚫 禁止在调试时反复触发真生成命令
+
+`grsai banana` / `grsai gpt` / `grsai minimax-h3` **会调用真实 grsai 平台 API，每次执行都消耗 API 配额（花用户的钱）**。
+
+| ✅ 可以做（不烧钱） | ❌ 禁止做（每次都烧钱）|
+|-------------------|----------------------|
+| `grsai --version` / `<cmd> --help` | `grsai banana -p "..."` 真生图 |
+| `grsai config get / path` | `grsai gpt -p "..."` 真生图 |
+| `grsai install --list / --dry-run` | `grsai minimax-h3 -p "..."` 真生视频 |
+| 读 / 写代码、改文档 | 用真 API Key 跑真生成命令测端到端 |
+| `pnpm typecheck` / `tsc --noEmit` | 在 CI / dev 脚本里默认跑生成命令 |
+| `pnpm build` / `pnpm lint` / `pnpm test` | |
+| Python `py_compile` / `importlib` 加载测试 | |
+| 用 mock 工具（见下） | |
+
+### 🛠️ 烧钱命令的替代调试手段
+
+**ComfyUI 节点**有专门的 mock CLI 工具，**不调真实 API**：
+
+```
+comfyui-nodes/dev-tools/mock-grsai.cmd
+```
+
+替换真 `D:\npm\grsai.cmd` 即可让节点调用 mock（详见 `comfyui-nodes/dev-tools/README.md`）。
+
+| 场景 | 推荐做法 |
+|------|---------|
+| 验证 CLI 端 `--json` 输出协议 | mock + 读 stdout JSON |
+| 验证节点 JSON 解析逻辑 | mock + 用 `node.dist/cli's JSON` |
+| 验证节点 import / INPUT_TYPES | `importlib.util.spec_from_file_location` + `py_compile` |
+| 验证 `tsc` 类型 | `pnpm typecheck` |
+| 验证 build 产物 | `pnpm build` |
+| 验证 ComfyUI 节点能跑通流程 | mock |
+| 验证 `--json` 模式 UI 进度推送 | mock slow 模式 |
+
+### ✅ 真生成命令的唯一合法场景
+
+1. **发版前的 sanity test**：每个子命令跑一次，确认线上 API 仍兼容
+2. **用户明确要求**："帮我跑一次试试" / "演示给我看"
+3. **生产工作流**：用户在用 CLI 做正经事
+
+**其他所有情况一律用 mock。**
+
+### 🛑 事故教训
+
+历史上曾因反复调真 `grsai banana` 调试 ComfyUI 节点逻辑，单次会话消耗 ~10 次生图配额。
+**血的教训**：mock 优先；真 API 是一等公民，不是测试 fixture。
+
+---
 
 | Java 类 / 行为 | TS 对应实现 |
 |----------------|-------------|
