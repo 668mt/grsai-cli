@@ -206,13 +206,18 @@ program
 /* -------------------------------------------------------------------------- */
 program
   .command('install [skills...]')
-  .description('安装内置 skill 到 ~/.agents/skills/（默认目录）')
+  .description('安装内置 skill 到 ~/.agents/skills/（默认目录；默认强制覆盖已存在的 skill）')
   .option(
     '-t, --target <dir>',
     '目标目录',
-    () => join(homedir(), '.agents', 'skills'),
+    join(homedir(), '.agents', 'skills'),
   )
-  .option('-f, --force', '覆盖已存在的 skill', false)
+  .option(
+    '-f, --force',
+    '覆盖已存在的 skill（默认开启；用 --no-force 跳过）',
+    true,
+  )
+  .option('--no-force', '不覆盖已存在的 skill（跳过）')
   .option('-l, --list', '列出可用 skill，不安装', false)
   .option('--dry-run', '只显示计划，不实际复制', false)
   .action(async (skills: string[], opts) => {
