@@ -103,8 +103,9 @@ export async function runMinimaxH3(opts: MinimaxH3CommandOptions): Promise<void>
 
   const tasks = targets.map((target, idx) => async () => {
     const taskStart = Date.now();
+    const tag = `[minimax-h3 ${idx + 1}/${count}]`;
     const spinner = ora({
-      text: `[minimax-h3 ${idx + 1}/${count}] 提交并轮询 (${resolution}, ${duration}s)...`,
+      text: `${tag} 提交任务 (${resolution}, ${duration}s)...`,
       color: 'cyan',
     }).start();
 
@@ -119,7 +120,7 @@ export async function runMinimaxH3(opts: MinimaxH3CommandOptions): Promise<void>
       // label 带上任务编号，多并发时 stderr 日志能区分是哪张图
       label: `minimax-h3 ${idx + 1}/${count}`,
       onTick: ({ elapsedSeconds: e, progress }: { elapsedSeconds: number; progress: number }) => {
-        spinner.text = `[minimax-h3 ${idx + 1}/${count}] 轮询中 · 已等待 ${formatElapsed(e)} · 进度 ${progress}%`;
+        spinner.text = `${tag} 轮询中 · 已等待 ${formatElapsed(e)} · 进度 ${progress}%`;
       },
     };
 
@@ -136,6 +137,8 @@ export async function runMinimaxH3(opts: MinimaxH3CommandOptions): Promise<void>
           seed: opts.seed ? Number(opts.seed) : undefined,
           replyType: 'async',
         });
+        // 拿到任务 ID 后 spinner 文字不变（仍是「提交任务...」），
+        // 等第一次心跳（onTick 触发 30s 后）才改为「轮询中」
         const urls = (task.results ?? []).map(r => r.url);
         if (urls.length === 0) throw new Error('任务完成但未返回视频 URL');
         const first = urls[0]!;

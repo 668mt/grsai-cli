@@ -97,8 +97,9 @@ export async function runGpt(opts: GptImageCommandOptions): Promise<void> {
 
   const tasks = targets.map((target, idx) => async () => {
     const taskStart = Date.now();
+    const tag = `[gpt ${idx + 1}/${count}]`;
     const spinner = ora({
-      text: `[gpt ${idx + 1}/${count}] 提交并轮询...`,
+      text: `${tag} 提交任务...`,
       color: 'cyan',
     }).start();
 
@@ -113,7 +114,7 @@ export async function runGpt(opts: GptImageCommandOptions): Promise<void> {
       // label 带上任务编号，多并发时 stderr 日志能区分是哪张图
       label: `gpt ${idx + 1}/${count}`,
       onTick: ({ elapsedSeconds: e, progress }: { elapsedSeconds: number; progress: number }) => {
-        spinner.text = `[gpt ${idx + 1}/${count}] 轮询中 · 已等待 ${formatElapsed(e)} · 进度 ${progress}%`;
+        spinner.text = `${tag} 轮询中 · 已等待 ${formatElapsed(e)} · 进度 ${progress}%`;
       },
     };
 
@@ -130,6 +131,9 @@ export async function runGpt(opts: GptImageCommandOptions): Promise<void> {
           mask: opts.mask ? await resolveMask(opts.mask) : undefined,
           replyType: 'async',
         });
+        // 拿到任务 ID 后 spinner 文字不变（仍是「提交任务...」），
+        // 等第一次心跳（onTick 触发 30s 后）才改为「轮询中」
+        // —— 这样两阶段分明，避免「轮询任务...」一闪而过
         const urls = (task.results ?? []).map(r => r.url);
         if (urls.length === 0) throw new Error('任务完成但未返回图片 URL');
         const first = urls[0]!;
