@@ -18,11 +18,6 @@ description: |
 - 用户希望批量并发生成同一 prompt 的多个变体
 - 用户希望 agent 改写 prompt 后再生成（中文 → 优化后的中文）
 
-不需要使用本 skill 的场景：
-
-- 用户只是想搜 / 看现成的素材 → 用 ai-lib-cli skill
-- 用户要把生成的图入库 → 用 ai-lib-cli upload
-
 ## 运行方式
 
 ```bash
@@ -64,6 +59,7 @@ grsai web   # 浏览器访问 http://localhost:5173
 | `grsai minimax-h3` | 视频生成（portrait/landscape，480p/768p/1080p，1~15s） | 2-5min |
 | `grsai web` | 启动 Web 调试界面（React + Vite） | 持续 |
 | `grsai config` | 管理 API Key / 输出目录 / LLM 配置 | - |
+| `grsai install` | 安装内置 skill 到全局目录 | - |
 
 ## 关键参数（所有子命令通用）
 
@@ -85,7 +81,7 @@ grsai web   # 浏览器访问 http://localhost:5173
 | gpt-image | `--model gpt-image-2 / 2.5`、`--ratio 1024x1024/1:1/...`、`--quality auto/medium/high` |
 | minimax-h3 | `--ratio portrait/landscape`、`--resolution 480p/768p/1080p`、`--duration 1~15` |
 
-## 默认行为
+## default 行为
 
 - **重试**：默认 2 次（总共尝试 3 次），所有错误都会重试（含内容审核违规）
 - **超时**：单次 HTTP 10 分钟；轮询总超时 10 分钟（max-wait 可改）
@@ -119,10 +115,3 @@ grsai web   # 浏览器访问 http://localhost:5173
 | 中文文件名 EPERM | 输出目录里有同名目录残留。删掉 `~/.grsai/output/同名/` 即可 |
 | 心跳看不到 | 任务 < 60s 不会触发；spinner 模式下 spinner.text 会更新而不是 stderr 行 |
 | API Key 错误 | `grsai config list` 检查 `apiKey` 是否配置；运行 `grsai config set --api-key <KEY>` |
-
-## 相关命令
-
-- `ai-lib resources` — 查询参考图素材（按 ID / 关键字 / 标签）
-- `ai-lib download` — 下载素材到本地路径（可作为 -i 参考图）
-- `grsai config` — 管理 grsai 配置
-- `grsai web` — 启动 Web 调试界面
