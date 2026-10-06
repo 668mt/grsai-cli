@@ -141,6 +141,7 @@ export async function runBanana(opts: BananaCommandOptions): Promise<void> {
           model: opts.model as BananaModel | undefined,
           aspectRatio: opts.ratio as BananaAspectRatio | undefined,
           imageSize: opts.size as BananaImageSize | undefined,
+          seed: opts.seed ? Number(opts.seed) : undefined,
           replyType: 'async',
         });
         // 拿到任务 ID 后 spinner 文字不变（仍是「提交任务...」），

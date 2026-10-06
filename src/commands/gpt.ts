@@ -134,6 +134,7 @@ export async function runGpt(opts: GptImageCommandOptions): Promise<void> {
           quality: opts.quality as GptImageQuality | undefined,
           background: opts.background as GptImageBackground | undefined,
           mask: opts.mask ? await resolveMask(opts.mask) : undefined,
+          seed: opts.seed ? Number(opts.seed) : undefined,
           replyType: 'async',
         });
         // 拿到任务 ID 后 spinner 文字不变（仍是「提交任务...」），

@@ -96,6 +96,7 @@ export class GptImageClient extends BaseImageClient {
     if (req.quality) payload.quality = req.quality;
     if (req.background) payload.background = req.background;
     if (req.mask) payload.mask = req.mask;
+    if (req.seed !== undefined && req.seed > 0) payload.seed = req.seed;
     return payload;
   }
 }

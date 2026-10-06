@@ -126,12 +126,19 @@ class GrsaiGptImage:
                     "step": 1,
                     "tooltip": "CLI 内部重试次数（0 = 不重试，默认 2）。整个生成流程（submit + poll + download）作为原子单元",
                 }),
+                "seed": ("INT", {
+                    "default": 0,
+                    "min": 0,
+                    "max": 2**31 - 1,
+                    "step": 1,
+                    "tooltip": "随机种子（0 = 不指定）。固定种子可使生成结果可复现",
+                }),
             },
             "optional": optional,
         }
 
-    RETURN_TYPES = ("IMAGE",)
-    RETURN_NAMES = ("images",)
+    RETURN_TYPES = ("IMAGE", "STRING")
+    RETURN_NAMES = ("images", "filenames")
     FUNCTION = "generate"
     CATEGORY = "Grsai/Image"
     OUTPUT_NODE = False
@@ -146,6 +153,7 @@ class GrsaiGptImage:
         count: int,
         max_wait: int,
         retry: int = 2,
+        seed: int = 0,
         **kwargs,
     ):
         if not prompt or not prompt.strip():
@@ -186,6 +194,7 @@ class GrsaiGptImage:
             "--overwrite",
             "--max-wait", str(max_wait),
             "--retry", str(retry),
+            "--seed", str(seed),
             "--json",
             "-o", str(output_dir),
         ]
@@ -226,4 +235,7 @@ class GrsaiGptImage:
         except Exception as e:
             raise GrsaiCliError(f"grsai-gpt: 读取输出 PNG 失败：{e}") from e
 
-        return (torch.stack(tensors, dim=0),)
+        # filenames: JSON 数组（每个元素是不含路径的 PNG 文件名）
+        import json as _json
+        filenames = _json.dumps([Path(p).name for p in paths], ensure_ascii=False)
+        return (torch.stack(tensors, dim=0), filenames)

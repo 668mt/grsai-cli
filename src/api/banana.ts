@@ -96,6 +96,7 @@ export class BananaClient extends BaseImageClient {
     if (req.images && req.images.length > 0) payload.images = req.images;
     if (req.aspectRatio) payload.aspectRatio = req.aspectRatio;
     if (req.imageSize) payload.imageSize = req.imageSize;
+    if (req.seed !== undefined && req.seed > 0) payload.seed = req.seed;
     return payload;
   }
 }

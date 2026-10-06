@@ -82,6 +82,7 @@ program
   .option('-k, --api-key <key>', '临时 API Key')
   .option('--proxy <url>', 'HTTP 代理')
   .option('--retry <n>', '重试次数（默认 2）', '2')
+  .option('--seed <n>', '随机种子（0 = 不指定）', (v: string) => Number(v))
   .option('--json', '输出 JSON 到 stdout（机器可读），进度日志走 stderr')
   .action(async (opts) => {
     try {
@@ -132,6 +133,7 @@ program
   .option('-k, --api-key <key>', '临时 API Key')
   .option('--proxy <url>', 'HTTP 代理')
   .option('--retry <n>', '重试次数（默认 2）', '2')
+  .option('--seed <n>', '随机种子（0 = 不指定）', (v: string) => Number(v))
   .option('--json', '输出 JSON 到 stdout（机器可读），进度日志走 stderr')
   .action(async (opts) => {
     try {

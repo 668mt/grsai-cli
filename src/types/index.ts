@@ -166,6 +166,8 @@ export interface BananaGenerateRequest {
   model?: BananaModel;
   aspectRatio?: BananaAspectRatio;
   imageSize?: BananaImageSize;
+  /** 随机种子（0 = 不指定） */
+  seed?: number;
   /** 固定 async 以便轮询 */
   replyType?: 'json' | 'stream' | 'async';
   /** 透传给后端的额外字段 */
@@ -199,6 +201,7 @@ export interface BananaCommandOptions {
   model?: string;
   ratio?: string;
   size?: string;
+  seed?: string;
   /** 生成数量，1~5；超过 5 抛错（对齐 Java） */
   count?: string;
   /** 是否覆盖已存在的输出文件 */
@@ -259,6 +262,8 @@ export interface GptImageGenerateRequest {
   background?: GptImageBackground;
   /** 蒙版 URL */
   mask?: string;
+  /** 随机种子（0 = 不指定） */
+  seed?: number;
   replyType?: 'json' | 'stream' | 'async';
   extras?: Record<string, unknown>;
 }
@@ -286,6 +291,7 @@ export interface GptImageCommandOptions {
   quality?: string;
   background?: string;
   mask?: string;
+  seed?: string;
   /** 生成数量，1~5；超过 5 抛错 */
   count?: string;
   overwrite?: boolean;
