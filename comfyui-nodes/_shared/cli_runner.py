@@ -24,49 +24,101 @@ import subprocess
 import sys
 import tempfile
 from pathlib import Path
+from typing import NamedTuple
 
 import torch
 from PIL import Image
 
 
-class GrsaiCliError(RuntimeError):
-    pass
+# ---------------- grsai 包装：绕开 .cmd / %* 的引号 bug ----------------
 
+class GrsaiCmd(NamedTuple):
+    """节点调 grsai CLI 的可执行前缀。
 
-# ---------------- 找 CLI 可执行文件 ----------------
-
-def find_grsai_cli() -> str:
-    """跨平台找 grsai 可执行文件。
-
-    优先级：
-      1) shutil.which("grsai")  —— 最通用（PATH 中能找到）
-      2) Windows 全局 npm 路径下的 grsai.cmd / grsai
-      3) 抛错，提示安装
+    Windows 的 grsai.cmd wrapper 用 `%*` 传递参数，会被空格分割 prompt，
+    导致带空格的 prompt 被截断。绕开办法：直接用 node + dist/cli.js，
+    subprocess.Popen 不会做 shell 解析，参数完整。
     """
+    exe: str         # 'node' 或 node.exe 绝对路径
+    script: str      # dist/cli.js 绝对路径
+
+    def to_argv(self, args: list[str]) -> list[str]:
+        """构造完整的 subprocess argv（绕过 .cmd wrapper）"""
+        return [self.exe, self.script, *args]
+
+
+def find_grsai_cli() -> GrsaiCmd:
+    """定位 grsai CLI 的 node 可执行文件和 cli.js 脚本路径。
+
+    不返回 .cmd wrapper 路径（Windows 的 %* 处理会破坏带空格的参数）。
+    直接返回 node + cli.js，subprocess.Popen 不会做 shell 解析，参数完整。
+    """
+    candidates: list[Path] = []
+    cli_js: Path | None = None
+
+    # 1) 从 shutil.which("grsai") 找 .cmd / sh 路径 → 反推 dist/cli.js 位置
     found = shutil.which("grsai")
     if found:
-        return found
+        candidates.append(Path(found))
 
+    # 2) Windows 全局 npm 路径下的 grsai.cmd
     if sys.platform == "win32":
-        # Windows 上 npm i -g 安装到 %npm_config_prefix%/grsai.cmd
-        candidates: list[Path] = []
         npm_prefix = os.environ.get("npm_config_prefix", "")
         if npm_prefix:
             candidates.append(Path(npm_prefix) / "grsai.cmd")
-        # 用户实际用的常见位置
         candidates.extend([
             Path("D:/npm/grsai.cmd"),
             Path("C:/npm/grsai.cmd"),
         ])
-        for cand in candidates:
-            if cand.is_file():
-                return str(cand)
 
-    raise GrsaiCliError(
-        "未找到 grsai CLI。请先全局安装：\n"
-        "  npm i -g grsai-cli\n"
-        "安装完后 `grsai --version` 应该能跑通"
-    )
+    # 从候选 .cmd 找对应的 dist/cli.js
+    # npm 安装的 cli.js 总是放在 <prefix>/node_modules/grsai-cli/dist/cli.js
+    for cand in candidates:
+        if not cand.is_file():
+            continue
+        parent = cand.parent  # D:/npm
+        js_path = parent / "node_modules" / "grsai-cli" / "dist" / "cli.js"
+        if js_path.is_file():
+            cli_js = js_path
+            break
+
+    # 3) 项目当前 / 上级目录找 dist/cli.js（源码运行场景）
+    if cli_js is None:
+        here = Path(__file__).resolve().parent  # _shared/
+        for ancestor in [
+            here.parent.parent / "dist" / "cli.js",  # <repo>/dist/cli.js
+            here.parent.parent.parent / "dist" / "cli.js",  # <parent>/dist/cli.js
+        ]:
+            if ancestor.is_file():
+                cli_js = ancestor
+                break
+
+    if cli_js is None:
+        raise GrsaiCliError(
+            "未找到 grsai CLI dist/cli.js。\n"
+            "请确认全局安装：npm i -g grsai-cli\n"
+            "或源码构建：pnpm build\n"
+            "安装完后 `grsai --version` 应该能跑通"
+        )
+
+    # 找 node 可执行文件
+    if sys.platform == "win32":
+        # 优先用 cli.cmd 旁边的 node.exe（npm 安装路径）
+        # npm 安装时 node.exe 通常在 <prefix>/node.exe
+        prefix_parent = cli_js.parent.parent.parent  # <npm_prefix>/
+        candidate_node = prefix_parent / "node.exe"
+        if candidate_node.is_file():
+            node_exe = str(candidate_node)
+        else:
+            node_exe = shutil.which("node") or shutil.which("node.exe") or "node"
+    else:
+        node_exe = shutil.which("node") or "node"
+
+    return GrsaiCmd(exe=node_exe, script=str(cli_js))
+
+
+class GrsaiCliError(RuntimeError):
+    pass
 
 
 # ---------------- ComfyUI IMAGE ↔ 临时文件 ----------------
@@ -189,14 +241,18 @@ def run_cli(
 ) -> tuple[int, str, str]:
     """运行 grsai CLI 子进程，返回 (returncode, stdout, stderr)。
 
-    - Windows 自动加 CREATE_NO_WINDOW，避免弹 cmd 窗口
-    - UTF-8 解码（防 GBK 崩溃）+ errors='replace'（防单字节错误整体抛错）
-    - 超时抛 GrsaiCliError（含命令前缀）
-    - FileNotFoundError 转 GrsaiCliError（提示装 CLI）
+    Args:
+        cmd: 子命令 + 参数（如 `['banana', '-p', '...', '--json']`）
+        timeout: 超时秒数
+        label: 错误信息前缀
+
+    自动调用 find_grsai_cli() 拿到 node + cli.js，绕过 .cmd wrapper 的 %* bug。
     """
+    grsi = find_grsai_cli()
+    argv = grsi.to_argv(cmd)
     try:
         result = subprocess.run(
-            cmd,
+            argv,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             timeout=timeout,
@@ -207,7 +263,7 @@ def run_cli(
         )
         return result.returncode, result.stdout, result.stderr
     except subprocess.TimeoutExpired as e:
-        preview = " ".join(cmd[:6]) + ("..." if len(cmd) > 6 else "")
+        preview = " ".join(argv[:6]) + ("..." if len(argv) > 6 else "")
         raise GrsaiCliError(
             f"{label} CLI 超时（{timeout}s）：{preview}"
         ) from e
@@ -256,8 +312,10 @@ def run_cli_with_progress(
 
     ansi_re = __import__("re").compile(r"\x1b\[[0-9;]*m")
 
+    grsi = find_grsai_cli()
+    argv = grsi.to_argv(cmd)
     proc = subprocess.Popen(
-        cmd,
+        argv,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         creationflags=(
@@ -293,7 +351,7 @@ def run_cli_with_progress(
             proc.communicate(timeout=5)
         except Exception:
             pass
-        preview = " ".join(cmd[:6]) + ("..." if len(cmd) > 6 else "")
+        preview = " ".join(argv[:6]) + ("..." if len(argv) > 6 else "")
         raise GrsaiCliError(
             f"{label} CLI 超时（{timeout}s）：{preview}"
         ) from e
@@ -302,7 +360,7 @@ def run_cli_with_progress(
 
     if proc.returncode != 0 and not stdout.strip():
         # 非 0 退出 + 无 JSON 输出，转为异常
-        preview = " ".join(cmd[:6]) + ("..." if len(cmd) > 6 else "")
+        preview = " ".join(argv[:6]) + ("..." if len(argv) > 6 else "")
         raise GrsaiCliError(
             f"{label} CLI 失败（exit={proc.returncode}）：{preview}\n"
             f"stderr: {''.join(stderr_lines)[-500:]}"
