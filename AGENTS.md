@@ -260,6 +260,68 @@ comfyui-nodes/dev-tools/mock-grsai.cmd
 | `Executors.newFixedThreadPool(count)` + Future 并发 | `Promise.all` + `runWithConcurrency` |
 | `GrsaiUtils.download` 拿 `taskId` 后立即 poll | `GrsaiTaskRunner.submit` + `pollUntilDone` |
 
+## ⚠️ Windows 平台坑（高优先级，跨平台开发必读）
+
+### 🚫 `.cmd` wrapper 的 `%*` 引号 bug（**node 调用千万绕过 wrapper**）
+
+Windows `npm i -g` 会生成 `D:\npm\grsai.cmd` 之类的 wrapper，内容是：
+
+```batch
+"%_prog%"  "%dp0%\node_modules\grsai-cli\dist\cli.js" %*
+```
+
+**问题**：当参数含空格（如用户 prompt `"服饰保持与图2一致， 穿着丝袜"`），`%*` 会**重新解析引号并按空格分割参数**，把 prompt 切成多个 token。结果：
+
+- `--json` 等后续参数丢失
+- CLI 走默认（人类输出）模式，stdout 变成 `"生成配置\nprompt ..."`
+- Python 节点 `json.loads(stdout)` 失败，报 `GrsaiCliError: 解析 CLI JSON 失败`
+- 输出路径被截断：`output` 字段只显示 `F:\Comfy-Desktop\...`（`-o` 参数截断）
+
+### ✅ 正确做法（ComfyUI 节点 / 所有跨平台调用）
+
+**永远不要 `subprocess.Popen([*.cmd] + args)`**——直接 `node + dist/cli.js`：
+
+```python
+# ❌ 错（会被 %* 切碎参数）
+proc = subprocess.Popen([r"D:\npm\grsai.cmd", "banana", "-p", "prompt 含空格", "--json", ...])
+
+# ✅ 对（直接 exec node，参数完整）
+class GrsaiCmd(NamedTuple):
+    exe: str         # 'node' 或 node.exe 绝对路径
+    script: str      # dist/cli.js 绝对路径
+
+def find_grsai_cli() -> GrsaiCmd:
+    # 1) shutil.which("grsai") 反推 dist/cli.js
+    # 2) D:\npm\node_modules\grsai-cli\dist\cli.js
+    # 3) 项目内 dist/cli.js
+    ...
+    return GrsaiCmd(exe="node", script="...")
+
+argv = find_grsai_cli().to_argv(["banana", "-p", "prompt 含空格", "--json", ...])
+proc = subprocess.Popen(argv)  # ✅ 参数完整
+```
+
+`subprocess.Popen(list, shell=False)` 默认走 `CreateProcess` 直接 exec，不做 shell 解析，**参数完整传递**。
+
+### 🛠️ 其他 Windows 坑（曾踩过的）
+
+| 坑 | 表现 | 解决 |
+|------|------|------|
+| **GBK 解码崩溃** | `UnicodeDecodeError: 'gbk' codec can't decode` | subprocess 加 `encoding="utf-8", errors="replace"` |
+| **弹 cmd 黑窗** | 节点运行时弹出黑色 cmd 窗口 | subprocess 加 `creationflags=CREATE_NO_WINDOW`（仅 Windows） |
+| **junction 软链路径** | `Path(__file__).resolve()` 解析到真实路径（不是 junction 路径） | 处理跨 ComfyUI 实例时记得这点，否则 `get_comfyui_output_dir()` 会算到错误目录 |
+| **路径 `\` 与 `/`** | Python 路径处理建议统一 `/`，Windows 自动转 | `Path("D:/foo/bar")` 比 `Path("D:\\foo\\bar")` 更易读 |
+
+### 🛡️ 验证 checklist（写 Windows 平台代码前必过）
+
+- [ ] 如果是 subprocess 调用，**永远不要**用 `.cmd` / `.bat` wrapper
+- [ ] 显式 `encoding="utf-8", errors="replace"`（不要靠系统默认 GBK）
+- [ ] `subprocess.Popen` 加 `creationflags=CREATE_NO_WINDOW`（仅 win32）
+- [ ] 长参数测试：prompt 含空格、含中文、含 emoji、含特殊字符（`,.;:`）
+- [ ] 跨 junction 软链的路径行为测试（`Path.resolve()` vs `Path(__file__)`）
+
+---
+
 ## 重要注意事项
 
 - **禁止硬编码 API Key**：必须从配置 / 环境变量 / CLI 参数读取
