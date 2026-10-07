@@ -77,18 +77,20 @@
   "dependencies": {
     "@hono/node-server": "^1.13.7",
     "@langchain/anthropic": "^0.3.16",
+    "@langchain/openai": "^0.3.16",
     "commander": "^12.1.0",
     "hono": "^4.6.14",
     "https-proxy-agent": "^7.0.5",
     "langchain": "^0.3.13",
-    "@langchain/openai": "^0.3.16",
     "ofetch": "^1.4.1",
     "ora": "^8.1.1",
-    "picocolors": "^1.1.1"
+    "picocolors": "^1.1.1",
+    "sharp": "0.35.5"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^2.21.1",
     "@types/node": "^22.7.5",
+    "@types/sharp": "^0.32.0",
     "eslint": "^9.12.0",
     "prettier": "^3.3.3",
     "tsup": "^8.3.5",

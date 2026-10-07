@@ -277,29 +277,58 @@ export async function downloadImages(
 
 /**
  * 读取本地图片并返回 base64 data URL
+ *
+ * 文件 > 5MB（默认阈值）时自动压缩到 < 2MB，避免 grsai 平台拒绝
+ * 大图（HTTP 413 / 参数超限）。
+ *
+ * 压缩行为：
+ *   - 默认开启（compress = true）
+ *   - 压缩策略见 image-compress.ts（多级联：质量 → 尺寸 → 降质量 → 转 JPEG）
  */
-export async function readLocalImageAsDataUrl(filePath: string): Promise<string> {
+export async function readLocalImageAsDataUrl(
+  filePath: string,
+  options: { compress?: boolean } = {},
+): Promise<string> {
   const abs = resolve(filePath);
   if (!existsSync(abs)) {
     throw new Error(`本地图片不存在：${abs}`);
   }
-  const buffer = await readFile(abs);
-  const mime = guessMimeFromExt(extname(abs));
-  return `data:${mime};base64,${buffer.toString('base64')}`;
+
+  const { compress = true } = options;
+  if (!compress) {
+    // 不压缩：直接读取
+    const buffer = await readFile(abs);
+    const mime = guessMimeFromExt(extname(abs));
+    return `data:${mime};base64,${buffer.toString('base64')}`;
+  }
+
+  // 默认压缩模式
+  const { readAndMaybeCompressImage } = await import('./image-compress.js');
+  const result = await readAndMaybeCompressImage(abs);
+  return `data:${result.mime};base64,${result.buffer.toString('base64')}`;
 }
 
 /**
  * 把 reference 数组规范化为 URL/base64 数组：
  *   - 以 http(s):// 开头 → 视为 URL 直接保留
- *   - 否则视为本地路径 → 转 base64 data URL
+ *   - 否则视为本地路径 → 必要时压缩后转 base64 data URL
+ *
+ * 压缩行为：
+ *   - 文件 > 5MB（默认）自动压缩到 < 2MB
+ *   - 压缩会自动调整尺寸 / 质量 / 格式（详见 image-compress.ts）
+ *   - options.disabled = true 跳过压缩
  */
-export async function normalizeReferences(inputs: string[]): Promise<string[]> {
+export async function normalizeReferences(
+  inputs: string[],
+  options: { compress?: boolean } = {},
+): Promise<string[]> {
+  const compressEnabled = options.compress !== false;  // 默认开启
   const out: string[] = [];
   for (const input of inputs) {
     if (input.startsWith('http://') || input.startsWith('https://')) {
       out.push(input);
     } else {
-      out.push(await readLocalImageAsDataUrl(input));
+      out.push(await readLocalImageAsDataUrl(input, { compress: compressEnabled }));
     }
   }
   return out;

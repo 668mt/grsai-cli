@@ -60,7 +60,7 @@ export async function runBanana(opts: BananaCommandOptions): Promise<void> {
 
   // reference 规范化：URL 原样，本地路径转 base64
   const images = opts.input && opts.input.length > 0
-    ? await normalizeReferences(opts.input)
+    ? await normalizeReferences(opts.input, { compress: opts.compress !== false })
     : undefined;
 
   const outputPath = opts.output

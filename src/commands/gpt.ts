@@ -53,7 +53,7 @@ export async function runGpt(opts: GptImageCommandOptions): Promise<void> {
   }
 
   const images = opts.input && opts.input.length > 0
-    ? await normalizeReferences(opts.input)
+    ? await normalizeReferences(opts.input, { compress: opts.compress !== false })
     : undefined;
 
   const outputPath = opts.output

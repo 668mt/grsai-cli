@@ -214,6 +214,8 @@ export interface BananaCommandOptions {
   proxy?: string;
   /** 重试次数（默认 2） */
   retry?: string;
+  /** 是否压缩本地参考图（默认 true；文件 > 5MB 时压缩到 < 2MB） */
+  compress?: boolean;
   /** 输出结构化 JSON 到 stdout（机器可读），进度日志走 stderr */
   json?: boolean;
 }
@@ -301,6 +303,8 @@ export interface GptImageCommandOptions {
   proxy?: string;
   /** 重试次数（默认 2） */
   retry?: string;
+  /** 是否压缩本地参考图（默认 true；文件 > 5MB 时压缩到 < 2MB） */
+  compress?: boolean;
   /** 输出结构化 JSON 到 stdout（机器可读），进度日志走 stderr */
   json?: boolean;
 }
@@ -377,6 +381,8 @@ export interface MinimaxH3CommandOptions {
   proxy?: string;
   /** 重试次数（默认 2） */
   retry?: string;
+  /** 是否压缩本地参考图（默认 true；文件 > 5MB 时压缩到 < 2MB） */
+  compress?: boolean;
   /** 输出结构化 JSON 到 stdout（机器可读），进度日志走 stderr */
   json?: boolean;
 }

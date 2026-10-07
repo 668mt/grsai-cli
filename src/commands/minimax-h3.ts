@@ -51,7 +51,7 @@ export async function runMinimaxH3(opts: MinimaxH3CommandOptions): Promise<void>
   }
 
   const images = opts.input && opts.input.length > 0
-    ? await normalizeReferences(opts.input)
+    ? await normalizeReferences(opts.input, { compress: opts.compress !== false })
     : undefined;
 
   // audios 只接受 URL 或 base64，不做本地路径→base64（音频 base64 体积大）
