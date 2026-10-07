@@ -1,6 +1,6 @@
 {
   "name": "grsai-cli",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "One-line CLI for grsai image & video generation (nano-banana / gpt-image-2 / gpt-image-2.5 / minimax-h3). Auto-retry, concurrent multi-image, bundled agent skills.",
   "type": "module",
   "bin": {
