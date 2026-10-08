@@ -88,21 +88,24 @@ class GrsaiBanana:
                     "default": "2K",
                     "tooltip": "图片分辨率档位",
                 }),
-                "model": ([
-                    "nano-banana-2",
-                    "nano-banana",
-                    "nano-banana-fast",
-                    "nano-banana-2-cl",
-                    "nano-banana-2-2k-cl",
-                    "nano-banana-2-4k-cl",
-                    "nano-banana-pro",
-                    "nano-banana-pro-vt",
-                    "nano-banana-pro-cl",
-                    "nano-banana-pro-vip",
-                    "nano-banana-pro-4k-vip",
-                ], {
+                "model": ("STRING", {
                     "default": "nano-banana-2",
-                    "tooltip": "nano-banana 模型版本（与 CLI 端 BANANA_MODELS 同步）",
+                    "forceInput": True,  # 同时支持下拉选择和自由输入
+                    "options": [
+                        "nano-banana-2",
+                        "nano-banana-2.1",  # 新增
+                        "nano-banana-fast",
+                        "nano-banana",
+                        "nano-banana-2-cl",
+                        "nano-banana-2-2k-cl",
+                        "nano-banana-2-4k-cl",
+                        "nano-banana-pro",
+                        "nano-banana-pro-vt",
+                        "nano-banana-pro-cl",
+                        "nano-banana-pro-vip",
+                        "nano-banana-pro-4k-vip",
+                    ],
+                    "tooltip": "模型 ID。下拉选常用值（含新增的 nano-banana-2.1），也可直接输入任意字符串（如私有模型 ID）",
                 }),
                 "count": ("INT", {
                     "default": 1,
@@ -157,8 +160,6 @@ class GrsaiBanana:
         if not prompt or not prompt.strip():
             raise ValueError("grsai-banana: prompt 必填")
 
-        cli = find_grsai_cli()
-
         # 收集所有参考图 → 临时 PNG 文件
         ref_paths: list[str] = []
         for i in range(1, MAX_REF_IMAGES + 1):
@@ -181,8 +182,9 @@ class GrsaiBanana:
         # 输出目录：<ComfyUI>/output/grsai-banana-<ts>/
         output_dir = get_comfyui_output_dir() / f"grsai-banana-{int(time.time())}"
 
+        # cmd 不含 cli 本身，run_cli_with_progress 内部会用 find_grsai_cli() + to_argv() 构造
         cmd = [
-            cli, "banana",
+            "banana",
             "-p", prompt.strip(),
             "--ratio", ratio,
             "--size", size,

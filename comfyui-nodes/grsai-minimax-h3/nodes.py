@@ -156,8 +156,6 @@ class GrsaiMinimaxH3:
         if duration < 1 or duration > 15:
             raise ValueError("grsai-minimax-h3: duration 必须在 1~15 秒之间")
 
-        cli = find_grsai_cli()
-
         # 收集所有参考图 → 临时 PNG 文件
         ref_paths: list[str] = []
         for i in range(1, MAX_REF_IMAGES + 1):
@@ -181,7 +179,7 @@ class GrsaiMinimaxH3:
         output_dir = get_comfyui_output_dir() / f"grsai-minimax-h3-{int(time.time())}"
 
         cmd = [
-            cli, "minimax-h3",
+            "minimax-h3",
             "-p", prompt.strip(),
             "--ratio", ratio,
             "--resolution", resolution,

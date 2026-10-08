@@ -65,15 +65,17 @@ class GrsaiGptImage:
                     "default": "",
                     "tooltip": "提示词",
                 }),
-                "model": ([
-                    "gpt-image-2.5",
-                    "gpt-image-2",
-                    "gpt-image-2-vip",
-                    "gpt-image-2.5-flare",
-                    "gpt-image-2.5-sunburst",
-                ], {
+                "model": ("STRING", {
                     "default": "gpt-image-2.5",
-                    "tooltip": "gpt-image 模型版本",
+                    "forceInput": True,  # 同时支持下拉选择和自由输入
+                    "options": [
+                        "gpt-image-2.5",
+                        "gpt-image-2",
+                        "gpt-image-2-vip",
+                        "gpt-image-2.5-flare",
+                        "gpt-image-2.5-sunburst",
+                    ],
+                    "tooltip": "模型 ID。下拉选常用值，也可直接输入任意字符串（如私有模型 ID）",
                 }),
                 "ratio": ([
                     "1:1",          # gpt-image-2 / 2.5: 1024x1024
@@ -159,8 +161,6 @@ class GrsaiGptImage:
         if not prompt or not prompt.strip():
             raise ValueError("grsai-gpt: prompt 必填")
 
-        cli = find_grsai_cli()
-
         # 收集所有参考图 → 临时 PNG 文件
         ref_paths: list[str] = []
         for i in range(1, MAX_REF_IMAGES + 1):
@@ -184,7 +184,7 @@ class GrsaiGptImage:
         output_dir = get_comfyui_output_dir() / f"grsai-gpt-{int(time.time())}"
 
         cmd = [
-            cli, "gpt",
+            "gpt",
             "-p", prompt.strip(),
             "--model", model,
             "--ratio", ratio,

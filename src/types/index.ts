@@ -122,6 +122,7 @@ export type BananaModel =
   | 'nano-banana'
   | 'nano-banana-fast'
   | 'nano-banana-2'
+  | 'nano-banana-2.1'
   | 'nano-banana-2-cl'
   | 'nano-banana-2-2k-cl'
   | 'nano-banana-2-4k-cl'
@@ -135,6 +136,7 @@ export const BANANA_MODELS: BananaModel[] = [
   'nano-banana',
   'nano-banana-fast',
   'nano-banana-2',
+  'nano-banana-2.1',          // ← 新增
   'nano-banana-2-cl',
   'nano-banana-2-2k-cl',
   'nano-banana-2-4k-cl',

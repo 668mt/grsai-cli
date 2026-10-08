@@ -20,9 +20,7 @@ import { Command, Option } from 'commander';
 import {
   BANANA_ASPECT_RATIOS,
   BANANA_IMAGE_SIZES,
-  BANANA_MODELS,
   GPT_IMAGE_BACKGROUNDS,
-  GPT_IMAGE_MODELS,
   GPT_IMAGE_QUALITIES,
   MINIMAX_H3_ASPECT_RATIOS,
   MINIMAX_H3_RESOLUTIONS,
@@ -62,10 +60,10 @@ program
   .option('-o, --output <path>', '输出路径（文件或目录）')
   .option('-n, --count <n>', '生成数量（1~5），多张时并发跑', '1')
   .option('--overwrite', '覆盖已存在的输出文件', false)
-  .addOption(
-    new Option('--model <id>', '模型名称')
-      .choices(BANANA_MODELS)
-      .default('nano-banana-2'),
+  .option(
+    '--model <id>',
+    '模型名称（任意字符串，默认 nano-banana-2；常用：nano-banana-2 / -2.1 / -fast / -pro-4k-vip）',
+    'nano-banana-2',
   )
   .addOption(
     new Option('--ratio <ratio>', '宽高比')
@@ -114,10 +112,10 @@ program
   .option('-o, --output <path>', '输出路径（文件或目录）')
   .option('-n, --count <n>', '生成数量（1~5），多张时并发跑', '1')
   .option('--overwrite', '覆盖已存在的输出文件', false)
-  .addOption(
-    new Option('--model <id>', '模型名称')
-      .choices(GPT_IMAGE_MODELS)
-      .default('gpt-image-2.5'),
+  .option(
+    '--model <id>',
+    '模型名称（任意字符串，默认 gpt-image-2.5；常用：gpt-image-2 / -2.5 / -2-vip / -2.5-flare / -2.5-sunburst）',
+    'gpt-image-2.5',
   )
   .option('--ratio <ratio>', '比例（如 1:1）或像素值（如 1024x1024）', '1024x1024')
   .addOption(
