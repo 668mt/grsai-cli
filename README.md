@@ -40,7 +40,7 @@
 npx -y grsai-cli@latest install
 ```
 
-然后配置 API Key：
+然后配置 API Key（先到 [grsai 控制台](https://grsai.ai) 复制你的 Key）：
 
 ```bash
 grsai config set --api-key sk-xxx
@@ -98,6 +98,7 @@ node dist/cli.js --version
 
 ```bash
 # 1. API Key（写入 ~/.grsai/config.json）
+#    Key 来源：https://grsai.ai
 grsai config set --api-key sk-xxx
 
 # 2. 默认输出目录（可选；未设置则输出到当前工作目录）

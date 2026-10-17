@@ -40,7 +40,7 @@ Zero-install, one-line experience — no clone, no build:
 npx -y grsai-cli@latest install
 ```
 
-Then configure your API key:
+Then configure your API key (grab it from your [grsai Dashboard](https://grsai.ai)):
 
 ```bash
 grsai config set --api-key sk-xxx
@@ -98,6 +98,7 @@ node dist/cli.js --version
 
 ```bash
 # 1. API key (persisted to ~/.grsai/config.json)
+#    Get your key at: https://grsai.ai
 grsai config set --api-key sk-xxx
 
 # 2. Default output directory (optional; falls back to cwd)
